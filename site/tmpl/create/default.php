@@ -58,8 +58,10 @@ if(array_key_exists('submit', $_POST)) {
     $report = new stdClass();
     $report->present = json_encode($present);
     $report->absent = json_encode($absent);
+    $report->date_created = $date_str;
     $db = JFactory::getDbo();
     $db->insertObject('#__attendance_reports', $report);
+    $app->redirect(JRoute::_('index.php?option=com_attendance&view=home'));
 }
 ?>
 <style>

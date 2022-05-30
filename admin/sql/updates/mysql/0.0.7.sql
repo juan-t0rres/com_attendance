@@ -4,5 +4,6 @@ CREATE TABLE `#__attendance_reports` (
     `id` SERIAL NOT NULL, 
     `present` JSON,
     `absent` JSON,
+    `date_created` VARCHAR(10) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB; 
