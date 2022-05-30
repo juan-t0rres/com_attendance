@@ -11,37 +11,70 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted Access');
 
+use Joomla\CMS\Factory;
+use Joomla\CMS\Language\Text;
+
+function debug_to_console($data) {
+    $output = $data;
+    if (is_array($output))
+        $output = implode(',', $output);
+
+    echo "<script>console.log('".$output."');</script>";
+}
+
+$app = Factory::getApplication();
+$date = Factory::getDate();
+$date_str = $date->format(Text::_('DATE_FORMAT_FILTER_DATE'));
+$input = $app->input;
+
 $groupId = 2;
 $access = new JAccess();
 $members = $access->getUsersByGroup($groupId);
 
 $rows = '';
+$users = [];
 foreach ($members as $id) {
     $user = JFactory::getUser($id);
+    array_push($users, $user);
     $rows .= '<tr>';
     $rows .= '<td>' . $user->name . '</td>';
-    $rows .= '<td>' . $user->username . '</td>';
-    $rows .= '<td>' . $user->email . '</td>';
-    $rows .= '<td>' . $user->id . '</td>';
+    $rows .= '<td><input type="checkbox" id="' . $user->id . '" name="' . $user->id . '" value="' . $user->id . '"></td>';
     $rows .= '</tr>';
 }
 
+if(array_key_exists('submit', $_POST)) {
+    foreach ($users as $user) {
+        $present = $input->get($user->id, False);
+        if($present) {
+            debug_to_console('Marked present: ' . $user->name);
+        }
+    }
+}
 ?>
 <style>
-    .attendance-table th,
-    td {
-        padding: 15px;
+    .attendance-table td {
+        padding: 8px;
+    }
+
+    .attendance-table th {
+        padding-left: 8px;
+    }
+
+    .attendance-table {
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
 </style>
 
 <h2>New Attendance Report</h2>
-<table class="attendance-table">
-    <tr>
-        <th>Name</th>
-        <th>Username</th>
-        <th>E-mail</th>
-        <th>Unique ID</th>
-    </tr>
-    <?php echo $rows; ?>
-</table>
-<a href="/joomla4/index.php/component/attendance/?view=test">Test Link to New View</a>
+<h3><?php echo $date_str; ?></h3>
+<form method="post"> 
+    <table class="attendance-table">
+        <tr>
+            <th>Name</th>
+            <th>Present</th>
+        </tr>
+        <?php echo $rows; ?>
+    </table>
+    <input type="submit" name="submit" value="Submit">
+</form>

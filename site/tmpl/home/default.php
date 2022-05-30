@@ -14,4 +14,4 @@ defined('_JEXEC') or die('Restricted Access');
 ?>
 
 <h2>Attendance</h2>
-<button href="/joomla4/index.php/component/attendance/?view=test">Create New Attendance Report</button>
+<a href="<?php echo JURI::current(); ?>?view=create">Create New Attendance Report</a>
