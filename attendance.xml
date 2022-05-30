@@ -9,7 +9,7 @@
     <author>Juan Torres</author>
     <license>GPL v3</license>
     <!--  The version string is recorded in the components table -->
-    <version>0.0.1</version>
+    <version>0.0.7</version>
     <!-- The description is optional and defaults to the name -->
     <description>
         Attendance component
@@ -40,9 +40,26 @@
              This is the name of the folder in your component package to copy FROM -->
         <files folder="admin/">
             <folder>services</folder>
+            <folder>sql</folder>
             <folder>src</folder>
             <folder>tmpl</folder>
         </files>
     </administration>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/uninstall.mysql.utf8.sql</file>
+        </sql>
+    </uninstall>
+    <update>
+        <schemas>
+            <schemapath type="mysql">sql/updates/mysql</schemapath>
+        </schemas>
+    </update>
 
 </extension>

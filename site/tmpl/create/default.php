@@ -43,12 +43,23 @@ foreach ($members as $id) {
 }
 
 if(array_key_exists('submit', $_POST)) {
+    $present = [];
+    $absent = [];
     foreach ($users as $user) {
-        $present = $input->get($user->id, False);
-        if($present) {
+        $is_present = $input->get($user->id, False);
+        if($is_present) {
             debug_to_console('Marked present: ' . $user->name);
+            array_push($present, $user->id);
+        }
+        else {
+            array_push($absent, $user->id);
         }
     }
+    $report = new stdClass();
+    $report->present = json_encode($present);
+    $report->absent = json_encode($absent);
+    $db = JFactory::getDbo();
+    $db->insertObject('#__attendance_reports', $report);
 }
 ?>
 <style>
