@@ -31,32 +31,31 @@ $present_users = '';
 $user_ids = json_decode($report->present);
 foreach ($user_ids as $id) {
     $user = JFactory::getUser($id);
-    $present_users .= '<div>' . $user->name . '</div>';
+    $present_users .= '<tr class="table-success">';
+    $present_users .= '<td>' . $user->name . '</td>';
+    $present_users .= '<td>Yes</td>';
+    $present_users .= '</tr>';
 }
 
 $absent_users = '';
 $user_ids = json_decode($report->absent);
 foreach ($user_ids as $id) {
     $user = JFactory::getUser($id);
-    $absent_users .= '<div>' . $user->name . '</div>';
+    $present_users .= '<tr class="table-danger">';
+    $present_users .= '<td>' . $user->name . '</td>';
+    $present_users .= '<td>No</td>';
+    $present_users .= '</tr>';
 }
 ?>
 
-<style>
-    .section {
-        margin-top: 10px;
-        padding: 10px;
-    }
-</style>
-
 <h2>View Report</h2>
-<div class="section">
-    <h4>Present</h4>
+<h3><?php echo $report->date_created; ?></h3>
+
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Present</th>
+    </tr>
     <?php echo $present_users; ?>
-</div>
-<div class="section">
-    <h4>Absent</h4>
     <?php echo $absent_users; ?>
-</div>
-
-
+</table>

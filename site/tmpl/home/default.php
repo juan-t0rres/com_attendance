@@ -34,7 +34,7 @@ if ($reports)
     foreach ($reports as $report)
     {
         $href = JURI::current() . '?view=report&id=' . $report->id;
-        $reports_html .= '<div>' . $report->id . ' - <a href="' . $href . '">' . $report->date_created . '</a></div>';
+        $reports_html .= '<a class="list-group-item list-group-item-action" href="' . $href . '">' .   $report->id . '. ' .  $report->date_created . '</a>';
         debug_to_console($report->id);
         debug_to_console($report->present);
         debug_to_console($report->absent);
@@ -45,11 +45,6 @@ if ($reports)
 ?>
 
 <style>
-    .reports {
-        display: flex;
-        flex-direction: column;
-    }
-
     .section {
         margin-bottom: 20px;
         padding: 10px;
@@ -58,12 +53,12 @@ if ($reports)
 
 <div class="section">
     <h2>Attendance</h2>
-    <a href="<?php echo JURI::current(); ?>?view=create">Create New Attendance Report</a>
+    <a class="btn btn-primary btn-sm" href="<?php echo JURI::current(); ?>?view=create">Create New Attendance Report</a>
 </div>
 
 <div class="section">
     <h3>Past Attendance Reports</h3>
-    <div class="reports">
+    <div class="list-group">
         <?php echo $reports_html; ?>
     </div>
 </div>

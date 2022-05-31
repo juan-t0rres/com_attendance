@@ -24,10 +24,10 @@ function debug_to_console($data) {
 
 $app = Factory::getApplication();
 $date = Factory::getDate();
-$date_str = $date->format(Text::_('DATE_FORMAT_FILTER_DATE'));
+$date_str = $date->format('m/d/Y');
 $input = $app->input;
 
-$groupId = 2;
+$groupId = 11;
 $access = new JAccess();
 $members = $access->getUsersByGroup($groupId);
 
@@ -64,30 +64,16 @@ if(array_key_exists('submit', $_POST)) {
     $app->redirect(JRoute::_('index.php?option=com_attendance&view=home'));
 }
 ?>
-<style>
-    .attendance-table td {
-        padding: 8px;
-    }
-
-    .attendance-table th {
-        padding-left: 8px;
-    }
-
-    .attendance-table {
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-</style>
 
 <h2>New Attendance Report</h2>
 <h3><?php echo $date_str; ?></h3>
 <form method="post"> 
-    <table class="attendance-table">
+    <table class="table">
         <tr>
             <th>Name</th>
             <th>Present</th>
         </tr>
         <?php echo $rows; ?>
     </table>
-    <input type="submit" name="submit" value="Submit">
+    <input type="submit" name="submit" value="Submit" class="btn btn-primary"/>
 </form>
