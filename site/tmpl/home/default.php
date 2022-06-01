@@ -44,19 +44,12 @@ if ($reports)
 
 ?>
 
-<style>
-    .section {
-        margin-bottom: 20px;
-        padding: 10px;
-    }
-</style>
-
-<div class="section">
+<div class="mb-5">
     <h2>Attendance</h2>
     <a class="btn btn-primary btn-sm" href="<?php echo JURI::current(); ?>?view=create">Create New Attendance Report</a>
 </div>
 
-<div class="section">
+<div>
     <h3>Past Attendance Reports</h3>
     <div class="list-group">
         <?php echo $reports_html; ?>

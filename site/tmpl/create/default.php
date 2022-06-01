@@ -27,9 +27,9 @@ $date = Factory::getDate();
 $date_str = $date->format('m/d/Y');
 $input = $app->input;
 
-$groupId = 11;
+$group_id = 11;
 $access = new JAccess();
-$members = $access->getUsersByGroup($groupId);
+$members = $access->getUsersByGroup($group_id);
 
 $rows = '';
 $users = [];
@@ -65,10 +65,55 @@ if(array_key_exists('submit', $_POST)) {
 }
 ?>
 
+<script>
+function search() {
+    let input = document.getElementById("search");
+    let filter = input.value.toUpperCase();
+    let table = document.getElementById("table");
+    let tr = table.getElementsByTagName("tr");
+    for (let i = 0; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+            let txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }       
+    }
+}
+
+function clearSearch() {
+    let input = document.getElementById("search");
+    input.value = '';
+    let table = document.getElementById("table");
+    let tr = table.getElementsByTagName("tr");
+    for (let i = 0; i < tr.length; i++) {
+        let td = tr[i].getElementsByTagName("td")[0];
+        if (td) {
+            tr[i].style.display = "";
+        }
+    }
+}
+</script>
+
+<style>
+    .search-bar {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        width: 300px;
+    }
+</style>
+
 <h2>New Attendance Report</h2>
 <h3><?php echo $date_str; ?></h3>
+<div class="input-group search-bar">
+    <input class="form-control" type="text" id="search" onkeyup="search()" placeholder="Search student name"/>
+    <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+</div>
 <form method="post"> 
-    <table class="table">
+    <table class="table" id="table">
         <tr>
             <th>Name</th>
             <th>Present</th>
