@@ -44,11 +44,17 @@ if (isset($report_id)) {
     asort($members);
 }
 
-$rows = '';
+
 $users = [];
 foreach ($members as $id) {
     $user = JFactory::getUser($id);
     array_push($users, $user);
+}
+usort($users, function ($user_a, $user_b) {
+    return strcmp($user_a->name, $user_b->name);
+});
+$rows = '';
+foreach ($users as $user) {
     $rows .= '<tr>';
     $rows .= '<td>' . $user->name . '</td>';
     $rows .= '<td><input type="checkbox"'; 

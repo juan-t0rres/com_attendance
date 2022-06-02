@@ -29,8 +29,15 @@ $report = $db->loadObject();
 
 $present_users = '';
 $user_ids = json_decode($report->present);
+$users = [];
 foreach ($user_ids as $id) {
     $user = JFactory::getUser($id);
+    array_push($users, $user);
+}
+usort($users, function ($user_a, $user_b) {
+    return strcmp($user_a->name, $user_b->name);
+});
+foreach ($users as $user) {
     $present_users .= '<tr class="table-success">';
     $present_users .= '<td>' . $user->name . '</td>';
     $present_users .= '<td>Yes</td>';
@@ -39,12 +46,19 @@ foreach ($user_ids as $id) {
 
 $absent_users = '';
 $user_ids = json_decode($report->absent);
+$users = [];
 foreach ($user_ids as $id) {
     $user = JFactory::getUser($id);
-    $present_users .= '<tr class="table-danger">';
-    $present_users .= '<td>' . $user->name . '</td>';
-    $present_users .= '<td>No</td>';
-    $present_users .= '</tr>';
+    array_push($users, $user);
+}
+usort($users, function ($user_a, $user_b) {
+    return strcmp($user_a->name, $user_b->name);
+});
+foreach ($users as $user) {
+    $absent_users .= '<tr class="table-danger">';
+    $absent_users .= '<td>' . $user->name . '</td>';
+    $absent_users .= '<td>No</td>';
+    $absent_users .= '</tr>';
 }
 ?>
 

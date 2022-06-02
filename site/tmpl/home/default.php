@@ -18,6 +18,7 @@ use Joomla\CMS\Uri\Uri;
 $uri = Uri::getInstance();
 $page = $uri->getVar('page') ?? 1;
 $date_param = $uri->getVar('date');
+$page_size = $uri->getVar('page_size') ?? 5;
 
 $db = JFactory::getDBO();
 $query = $db->getQuery(true);
@@ -33,7 +34,6 @@ $db->setQuery($query);
 $db->execute();
 $num_rows = $db->getNumRows();
 
-$page_size = 5;
 $num_pages = $num_rows / $page_size;
 $num_pages_float = $num_rows / (float) $page_size;
 if ($num_pages_float > $num_pages) {
@@ -46,6 +46,8 @@ if (isset($date_param)) {
     $next_page_href .= '&date=' . $date_param;
     $prev_page_href .= '&date=' . $date_param;
 }
+$next_page_href .= '&page_size=' . $page_size;
+$prev_page_href .= '&page_size=' . $page_size;
 $next_page_button = '<li class="page-item"><a class="page-link" href="' . $next_page_href . '">&raquo;</a></li>';
 $prev_page_button = '<li class="page-item"><a class="page-link" href="' . $prev_page_href . '">&laquo;</a></li>';
 if ($page <= 1) {
@@ -83,13 +85,31 @@ if(array_key_exists('search', $_POST)) {
     $app->redirect(JRoute::_('index.php?option=com_attendance&view=home&page=' . $page . '&date=' . $input->get('date_param')));
 }
 
+$page_size_options = [5, 10, 20];
+$options = '';
+foreach ($page_size_options as $page_size_option) {
+    $uri->setVar('page_size', $page_size_option);
+    $options .= '<option value="?';
+    $options .= $uri->getQuery() . '" ';
+    if ($page_size == $page_size_option) {
+        $options .= 'selected';
+    }
+    $options .= '>' . $page_size_option . '</option>';
+}
+
 ?>
 
 <style>
-    .search-bar {
+    .filters {
         margin-top: 20px;
         margin-bottom: 20px;
-        width: 400px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-bar {
+        width: 310px;
     }
 
     .pagination {
@@ -99,14 +119,19 @@ if(array_key_exists('search', $_POST)) {
 
 <h2>Attendance</h2>
 <a class="btn btn-primary" href="<?php echo JURI::current(); ?>?view=create">Take Attendance</a>
-<form method="post"> 
+<form method="post" class="filters"> 
     <div class="search-bar input-group"> 
         <input name="date_param" class="form-control" value="<?php echo $date_param ?>" type="date"/>
         <input type="submit" name="search" value="Search" class="btn btn-secondary" />
         <a class="btn btn-secondary" href="<?php echo JURI::current(); ?>?view=home">Clear</a>
     </div>
+    <div>
+        <label for="page-size-select">Results Per Page</label>
+        <select id="page-size-select" onchange="location = this.value;">
+            <?php echo $options; ?>
+        </select>
+    </div>
 </form>
-
 
 <table class="table" id="table">
     <tr>
