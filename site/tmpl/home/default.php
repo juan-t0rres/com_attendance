@@ -64,11 +64,15 @@ $rows = '';
 if ($reports) {
     foreach ($reports as $report)
     {
-        $href = JURI::current() . '?view=report&id=' . $report->id;
+        $view_href = JURI::current() . '?view=report&id=' . $report->id;
+        $edit_href = JURI::current() . '?view=create&id=' . $report->id;
         $rows .= '<tr>';
         $rows .= '<td>' . $report->date_created . '</td>';
         $rows .= '<td>' . $report->created_by . '</td>';
-        $rows .= '<td><a class="btn btn-primary btn-sm" href="' . $href . '" role="button">View</a></td>';
+        $rows .= '<td>';
+        $rows .= '<a class="btn btn-primary btn-sm" href="' . $view_href . '" role="button">View</a>';
+        $rows .= '<a class="btn btn-secondary btn-sm ms-1" href="' . $edit_href . '" role="button">Edit</a>';
+        $rows .= '</td>';
         $rows .= '</tr>';
     }
 }
