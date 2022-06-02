@@ -59,6 +59,7 @@ if(array_key_exists('submit', $_POST)) {
     $report->present = json_encode($present);
     $report->absent = json_encode($absent);
     $report->date_created = $date_str;
+    $report->created_by = Factory::getUser()->name;
     $db = JFactory::getDbo();
     $db->insertObject('#__attendance_reports', $report);
     $app->redirect(JRoute::_('index.php?option=com_attendance&view=home'));
@@ -67,15 +68,15 @@ if(array_key_exists('submit', $_POST)) {
 
 <script>
 function search() {
-    let input = document.getElementById("search");
-    let filter = input.value.toUpperCase();
-    let table = document.getElementById("table");
-    let tr = table.getElementsByTagName("tr");
+    const input = document.getElementById("search");
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById("table");
+    const tr = table.getElementsByTagName("tr");
     for (let i = 0; i < tr.length; i++) {
-        let td = tr[i].getElementsByTagName("td")[0];
+        const td = tr[i].getElementsByTagName("td")[0];
         if (td) {
-            let txtValue = td.textContent || td.innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            const text = td.textContent || td.innerText;
+            if (text.toUpperCase().indexOf(filter) > -1) {
                 tr[i].style.display = "";
             } else {
                 tr[i].style.display = "none";
@@ -104,10 +105,18 @@ function clearSearch() {
         margin-bottom: 20px;
         width: 300px;
     }
+
+    .details {
+        background-color: #eaeaea;
+        padding: 8px;
+        display:inline-block
+    }
 </style>
 
-<h2>New Attendance Report</h2>
-<h3><?php echo $date_str; ?></h3>
+<h3>New Attendance Report</h3>
+<div class="details fw-light">
+    <div><b>Date:</b> <?php echo $date_str; ?></div>
+</div>
 <div class="input-group search-bar">
     <input class="form-control" type="text" id="search" onkeyup="search()" placeholder="Search student name"/>
     <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>

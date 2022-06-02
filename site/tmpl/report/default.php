@@ -21,7 +21,7 @@ $report_id = $uri->getVar('id');
 // load report from db
 $db = JFactory::getDbo();
 $query = $db->getQuery(true);
-$query->select('id,present,absent,date_created');
+$query->select('id,present,absent,date_created,created_by');
 $query->from('#__attendance_reports');
 $query->where('id = ' . $report_id);
 $db->setQuery((string) $query);
@@ -48,9 +48,19 @@ foreach ($user_ids as $id) {
 }
 ?>
 
-<h2>View Report</h2>
-<h3><?php echo $report->date_created; ?></h3>
+<style>
+    .details {
+        background-color: #eaeaea;
+        padding: 8px;
+        display:inline-block
+    }
+</style>
 
+<h2>View Report</h2>
+<div class="details fw-light">
+    <div><b>Created By:</b> <?php echo $report->created_by; ?></div>
+    <div><b>Date Created:</b> <?php echo $report->date_created; ?></div>
+</div>
 <table class="table">
     <tr>
         <th>Name</th>
