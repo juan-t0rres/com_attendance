@@ -138,7 +138,7 @@ function clearSearch() {
     .details {
         background-color: #eaeaea;
         padding: 8px;
-        display:inline-block
+        display:inline-block;
     }
 </style>
 
