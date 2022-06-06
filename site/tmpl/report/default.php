@@ -21,44 +21,51 @@ $report_id = $uri->getVar('id');
 // load report from db
 $db = JFactory::getDbo();
 $query = $db->getQuery(true);
-$query->select('id,present,absent,date_created,created_by');
+$query->select('id,present,absent,late,date_created,created_by');
 $query->from('#__attendance_reports');
 $query->where('id = ' . $report_id);
 $db->setQuery((string) $query);
 $report = $db->loadObject();
 
+function sort_name($user_a, $user_b) {
+    return strcmp($user_a->name, $user_b->name);
+}
+
+function get_user($id) {
+    return JFactory::getUser($id);
+}
+
 $present_users = '';
 $user_ids = json_decode($report->present);
-$users = [];
-foreach ($user_ids as $id) {
-    $user = JFactory::getUser($id);
-    array_push($users, $user);
-}
-usort($users, function ($user_a, $user_b) {
-    return strcmp($user_a->name, $user_b->name);
-});
+$users = array_map(get_user, $user_ids);
+usort($users, sort_name);
 foreach ($users as $user) {
     $present_users .= '<tr class="table-success">';
     $present_users .= '<td>' . $user->name . '</td>';
-    $present_users .= '<td>Yes</td>';
+    $present_users .= '<td>Present</td>';
     $present_users .= '</tr>';
 }
 
 $absent_users = '';
 $user_ids = json_decode($report->absent);
-$users = [];
-foreach ($user_ids as $id) {
-    $user = JFactory::getUser($id);
-    array_push($users, $user);
-}
-usort($users, function ($user_a, $user_b) {
-    return strcmp($user_a->name, $user_b->name);
-});
+$users = array_map(get_user, $user_ids);
+usort($users, sort_name);
 foreach ($users as $user) {
     $absent_users .= '<tr class="table-danger">';
     $absent_users .= '<td>' . $user->name . '</td>';
-    $absent_users .= '<td>No</td>';
+    $absent_users .= '<td>Absent</td>';
     $absent_users .= '</tr>';
+}
+
+$late_users = '';
+$user_ids = json_decode($report->late);
+$users = array_map(get_user, $user_ids);
+usort($users, sort_name);
+foreach ($users as $user) {
+    $late_users .= '<tr class="table-warning">';
+    $late_users .= '<td>' . $user->name . '</td>';
+    $late_users .= '<td>Late</td>';
+    $late_users .= '</tr>';
 }
 ?>
 
@@ -78,8 +85,9 @@ foreach ($users as $user) {
 <table class="table">
     <tr>
         <th>Name</th>
-        <th>Present</th>
+        <th>Status</th>
     </tr>
     <?php echo $present_users; ?>
+    <?php echo $late_users; ?>
     <?php echo $absent_users; ?>
 </table>

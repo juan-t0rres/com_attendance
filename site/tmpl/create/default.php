@@ -23,27 +23,30 @@ $date = Factory::getDate();
 $date_str = $date->format('m/d/Y');
 $input = $app->input;
 
+// Students are group id 11
 $group_id = 11;
 $access = new JAccess();
 
 $members = $access->getUsersByGroup($group_id);
 
 $present_ids = [];
+$absent_ids = [];
+$late_ids = [];
 if (isset($report_id)) {
     $db = JFactory::getDbo();
     $query = $db->getQuery(true);
-    $query->select('id,present,absent,date_created,created_by');
+    $query->select('id,present,absent,late,date_created,created_by');
     $query->from('#__attendance_reports');
     $query->where('id = ' . $report_id);
     $db->setQuery((string) $query);
     $report = $db->loadObject();
     $date_str = $report->date_created;
     $present_ids = json_decode($report->present);
+    $late_ids = json_decode($report->late);
     $absent_ids = json_decode($report->absent);
-    $members = array_merge($present_ids, $absent_ids);
+    $members = array_merge($present_ids, $absent_ids, $late_ids);
     asort($members);
 }
-
 
 $users = [];
 foreach ($members as $id) {
@@ -55,11 +58,21 @@ usort($users, function ($user_a, $user_b) {
 });
 $rows = '';
 foreach ($users as $user) {
+    $is_present = in_array($user->id, $present_ids);
+    $is_late = in_array($user->id, $late_ids);
     $rows .= '<tr>';
     $rows .= '<td>' . $user->name . '</td>';
-    $rows .= '<td><input type="checkbox"'; 
-    $rows .= 'id="' . $user->id . '" name="' . $user->id . '" ';
-    $rows .= 'value="' . $user->id . '"' . (in_array($user->id, $present_ids) ? 'checked' : '') . '>';
+    $rows .= '<td><input style="margin-left: 20px;" type="radio"'; 
+    $rows .= 'name="' . $user->id . '" ';
+    $rows .= 'value="present"' . ($is_present ? 'checked' : '') . '>';
+    $rows .= '</td>';
+    $rows .= '<td><input style="margin-left: 10px;" type="radio"'; 
+    $rows .= 'name="' . $user->id . '" ';
+    $rows .= 'value="late"' . ($is_late ? 'checked' : '') . '>';
+    $rows .= '</td>';
+    $rows .= '<td><input style="margin-left: 20px;" type="radio"'; 
+    $rows .= 'name="' . $user->id . '" ';
+    $rows .= 'value="absent"' . ((!$is_present && !$is_late) ? 'checked' : '') . '>';
     $rows .= '</td>';
     $rows .= '</tr>';
 }
@@ -67,10 +80,14 @@ foreach ($users as $user) {
 if(array_key_exists('submit', $_POST)) {
     $present = [];
     $absent = [];
+    $late = [];
     foreach ($users as $user) {
-        $is_present = $input->get($user->id, False);
-        if($is_present) {
+        $status = $input->get($user->id, False);
+        if($status == 'present') {
             array_push($present, $user->id);
+        }
+        else if ($status == 'late') {
+            array_push($late, $user->id);
         }
         else {
             array_push($absent, $user->id);
@@ -79,10 +96,10 @@ if(array_key_exists('submit', $_POST)) {
     $report = new stdClass();
     $report->present = json_encode($present);
     $report->absent = json_encode($absent);
+    $report->late = json_encode($late);
     $report->date_created = $date_str;
     $report->created_by = Factory::getUser()->name;
     $db = JFactory::getDbo();
-
     if (isset($report_id)) {
         $report->id = $report_id;
         $db->updateObject('#__attendance_reports', $report, 'id');
@@ -90,7 +107,7 @@ if(array_key_exists('submit', $_POST)) {
     }
     else {
         $db->insertObject('#__attendance_reports', $report);
-        $app->redirect(JRoute::_('index.php?option=com_attendance&view=home'));
+        $app->redirect(JRoute::_('index.php?option=com_attendance&view=report&id=' . $db->insertid()));
     }
 }
 ?>
@@ -140,6 +157,14 @@ function clearSearch() {
         padding: 8px;
         display:inline-block;
     }
+
+    td {
+        width:25%;
+    }
+
+    .test {
+        padding: 200px;
+    }
 </style>
 
 <h3><?php echo isset($report_id) ? 'Edit' : 'New'; ?> Attendance Report</h3>
@@ -153,11 +178,17 @@ function clearSearch() {
 </div>
 <form method="post"> 
     <table class="table" id="table">
-        <tr>
-            <th>Name</th>
-            <th>Present</th>
-        </tr>
-        <?php echo $rows; ?>
+        
+            <tr>
+                <th>Name</th>
+                <th>Present</th>
+                <th>Late</th>
+                <th>Absent</th>
+            </tr>
+        
+        
+            <?php echo $rows; ?>
+        
     </table>
     <input type="submit" name="submit" value="Submit" class="btn btn-primary"/>
 </form>
