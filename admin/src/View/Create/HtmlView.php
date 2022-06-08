@@ -1,6 +1,6 @@
 <?php
 
-namespace JuanTorres\Component\Attendance\Administrator\View\Attendance;
+namespace JuanTorres\Component\Attendance\Administrator\View\Create;
 
 defined('_JEXEC') or die;
 

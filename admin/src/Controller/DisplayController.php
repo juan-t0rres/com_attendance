@@ -26,7 +26,7 @@ class DisplayController extends BaseController {
      *
      * @var string
      */
-    protected $default_view = 'attendance';
+    protected $default_view = 'home';
     
     public function display($cachable = false, $urlparams = array()) {
         return parent::display($cachable, $urlparams);
