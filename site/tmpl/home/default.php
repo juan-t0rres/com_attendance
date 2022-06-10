@@ -22,7 +22,7 @@ $page_size = $uri->getVar('page_size') ?? 5;
 
 $db = JFactory::getDBO();
 $query = $db->getQuery(true);
-$query->select('id,present,absent,date_created,created_by');
+$query->select('*');
 $query->from('#__attendance_reports');
 if (isset($date_param)) {
     $date_arr = explode('-', $date_param);

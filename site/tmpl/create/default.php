@@ -35,7 +35,7 @@ $late_ids = [];
 if (isset($report_id)) {
     $db = JFactory::getDbo();
     $query = $db->getQuery(true);
-    $query->select('id,present,absent,late,date_created,created_by');
+    $query->select('*');
     $query->from('#__attendance_reports');
     $query->where('id = ' . $report_id);
     $db->setQuery((string) $query);
