@@ -17,6 +17,7 @@ use Joomla\CMS\Uri\Uri;
 
 $uri = Uri::getInstance();
 $report_id = $uri->getVar('id');
+$report_created_by = NULL;
 
 $app = Factory::getApplication();
 $date = Factory::getDate();
@@ -40,6 +41,7 @@ if (isset($report_id)) {
     $query->where('id = ' . $report_id);
     $db->setQuery((string) $query);
     $report = $db->loadObject();
+    $report_created_by = $report->created_by;
     $date_str = $report->date_created;
     $present_ids = json_decode($report->present);
     $late_ids = json_decode($report->late);
@@ -98,14 +100,15 @@ if(array_key_exists('submit', $_POST)) {
     $report->absent = json_encode($absent);
     $report->late = json_encode($late);
     $report->date_created = $date_str;
-    $report->created_by = Factory::getUser()->name;
     $db = JFactory::getDbo();
     if (isset($report_id)) {
         $report->id = $report_id;
+        $report->created_by = $report_created_by;
         $db->updateObject('#__attendance_reports', $report, 'id');
         $app->redirect(JRoute::_('index.php?option=com_attendance&view=report&id=' . $report_id));
     }
     else {
+        $report->created_by = Factory::getUser()->name;
         $db->insertObject('#__attendance_reports', $report);
         $app->redirect(JRoute::_('index.php?option=com_attendance&view=report&id=' . $db->insertid()));
     }
