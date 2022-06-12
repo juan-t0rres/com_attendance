@@ -14,14 +14,15 @@ defined('_JEXEC') or die('Restricted Access');
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Date\Date;
 
 $uri = Uri::getInstance();
 $report_id = $uri->getVar('id');
 $report_created_by = NULL;
+$report_date_created = NULL;
 
 $app = Factory::getApplication();
 $date = Factory::getDate();
-$date_str = $date->format('m/d/Y');
 $input = $app->input;
 
 // Students are group id 11
@@ -42,7 +43,8 @@ if (isset($report_id)) {
     $db->setQuery((string) $query);
     $report = $db->loadObject();
     $report_created_by = $report->created_by;
-    $date_str = $report->date_created;
+    $report_date_created = new Date($report->date_created);
+    $report_date_created = $report_date_created->format('Y-m-d');
     $present_ids = json_decode($report->present);
     $late_ids = json_decode($report->late);
     $absent_ids = json_decode($report->absent);
@@ -99,7 +101,7 @@ if(array_key_exists('submit', $_POST)) {
     $report->present = json_encode($present);
     $report->absent = json_encode($absent);
     $report->late = json_encode($late);
-    $report->date_created = $date_str;
+    $report->date_created = $input->get('date_created', $date->format('Y-m-d'));
     $db = JFactory::getDbo();
     if (isset($report_id)) {
         $report->id = $report_id;
@@ -156,42 +158,40 @@ function clearSearch() {
     }
 
     .details {
-        background-color: #eaeaea;
-        padding: 8px;
-        display:inline-block;
+        display: inline-block;
+    }
+
+    .table {
+        background: #fff;
+        border-radius: 5px;
     }
 
     td {
         width:25%;
     }
-
-    .test {
-        padding: 200px;
-    }
 </style>
 
 <h3><?php echo isset($report_id) ? 'Edit' : 'New'; ?> Attendance Report</h3>
-<div class="details fw-light">
-    <div><b>Date:</b> <?php echo $date_str; ?></div>
-    <?php if (isset($report_id)) echo '<div><b>Created By:</b> ' . $report->created_by . '</div>' ; ?>
-</div>
-<div class="input-group search-bar">
-    <input class="form-control" type="text" id="search" onkeyup="search()" placeholder="Search student name"/>
-    <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
-</div>
 <form method="post"> 
+    <div class="details fw-light">
+        <div>
+        <?php if (isset($report_id)) echo '<span class="fw-bold">Created By</span><p>' . $report->created_by . '</p>' ; ?>
+        </div>
+        <label class="fw-bold">Date</label>
+        <input name="date_created" value="<?php echo isset($report_date_created) ? $report_date_created : $date->format('Y-m-d'); ?>" class="form-control" type="date"/>
+    </div>
+    <div class="input-group search-bar">
+        <input class="form-control" type="text" id="search" onkeyup="search()" placeholder="Search student name"/>
+        <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+    </div>
     <table class="table" id="table">
-        
             <tr>
                 <th>Name</th>
                 <th>Present</th>
                 <th>Late</th>
                 <th>Absent</th>
             </tr>
-        
-        
             <?php echo $rows; ?>
-        
     </table>
     <input type="submit" name="submit" value="Submit" class="btn btn-primary"/>
 </form>

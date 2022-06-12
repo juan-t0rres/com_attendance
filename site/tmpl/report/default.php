@@ -13,6 +13,7 @@ defined('_JEXEC') or die('Restricted Access');
 
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Date\Date;
 
 // get query param for report id
 $uri = Uri::getInstance();
@@ -26,6 +27,8 @@ $query->from('#__attendance_reports');
 $query->where('id = ' . $report_id);
 $db->setQuery((string) $query);
 $report = $db->loadObject();
+$report_date_created = new Date($report->date_created);
+$report_date_created = $report_date_created->format('m/d/Y');
 
 function sort_name($user_a, $user_b) {
     return strcmp($user_a->name, $user_b->name);
@@ -71,16 +74,15 @@ foreach ($users as $user) {
 
 <style>
     .details {
-        background-color: #eaeaea;
-        padding: 8px;
+        padding: 5px;
         display:inline-block
     }
 </style>
 
-<h2>View Report</h2>
+<h2>View Attendance Report</h2>
 <div class="details fw-light">
     <div><b>Created By:</b> <?php echo $report->created_by; ?></div>
-    <div><b>Date Created:</b> <?php echo $report->date_created; ?></div>
+    <div><b>Date Created:</b> <?php echo $report_date_created; ?></div>
 </div>
 <table class="table">
     <tr>

@@ -13,6 +13,7 @@ defined('_JEXEC') or die('Restricted Access');
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Date\Date;
 
 // get query params for pagination and date
 $uri = Uri::getInstance();
@@ -57,7 +58,7 @@ if ($page >= $num_pages) {
     $next_page_button = null;
 }
 
-$query->order('id DESC');
+$query->order('date_created DESC');
 $query->setLimit($page_size, ($page - 1) * $page_size);
 $db->setQuery((string) $query);
 $reports = $db->loadObjectList();
@@ -68,8 +69,10 @@ if ($reports) {
     {
         $view_href = JURI::current() . '?view=report&id=' . $report->id;
         $edit_href = JURI::current() . '?view=create&id=' . $report->id;
+        $report_date_created = new Date($report->date_created);
+        $report_date_created = $report_date_created->format('m/d/Y');
         $rows .= '<tr>';
-        $rows .= '<td>' . $report->date_created . '</td>';
+        $rows .= '<td>' . $report_date_created . '</td>';
         $rows .= '<td>' . $report->created_by . '</td>';
         $rows .= '<td>';
         $rows .= '<a class="btn btn-primary btn-sm" href="' . $view_href . '" role="button">View</a>';
@@ -100,6 +103,15 @@ foreach ($page_size_options as $page_size_option) {
 ?>
 
 <style>
+    body {
+        background: #efefef;
+    }
+
+    .table {
+        background: #fff;
+        border-radius: 5px;
+    }
+
     .filters {
         margin-top: 20px;
         margin-bottom: 20px;
@@ -126,8 +138,8 @@ foreach ($page_size_options as $page_size_option) {
         <a class="btn btn-secondary" href="<?php echo JURI::current(); ?>?view=home">Clear</a>
     </div>
     <div>
-        <label for="page-size-select">Results Per Page</label>
-        <select id="page-size-select" onchange="location = this.value;">
+        <label for="page-size-select">Results</label>
+        <select id="page-size-select" class="form-control-sm" onchange="location = this.value;">
             <?php echo $options; ?>
         </select>
     </div>
