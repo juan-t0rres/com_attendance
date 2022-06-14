@@ -16,21 +16,24 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Date\Date;
 
+// Get URL parameters editing an attendance report.
 $uri = Uri::getInstance();
 $report_id = $uri->getVar('id');
 $report_created_by = NULL;
 $report_date_created = NULL;
 
+// Joomla APIs for date and input
 $app = Factory::getApplication();
 $date = Factory::getDate();
 $input = $app->input;
 
-// Students are group id 11
+// Students are group id 11, fetch all students
 $group_id = 11;
 $access = new JAccess();
-
 $members = $access->getUsersByGroup($group_id);
 
+// If report_id is set, then we are editing a report
+// so we fetch all the data involved.
 $present_ids = [];
 $absent_ids = [];
 $late_ids = [];
@@ -52,6 +55,7 @@ if (isset($report_id)) {
     asort($members);
 }
 
+// We need a list of all the users that were a part of the report.
 $users = [];
 foreach ($members as $id) {
     $user = JFactory::getUser($id);
@@ -60,27 +64,8 @@ foreach ($members as $id) {
 usort($users, function ($user_a, $user_b) {
     return strcmp($user_a->name, $user_b->name);
 });
-$rows = '';
-foreach ($users as $user) {
-    $is_present = in_array($user->id, $present_ids);
-    $is_late = in_array($user->id, $late_ids);
-    $rows .= '<tr>';
-    $rows .= '<td>' . $user->name . '</td>';
-    $rows .= '<td><input style="margin-left: 20px;" type="radio"'; 
-    $rows .= 'name="' . $user->id . '" ';
-    $rows .= 'value="present"' . ($is_present ? 'checked' : '') . '>';
-    $rows .= '</td>';
-    $rows .= '<td><input style="margin-left: 10px;" type="radio"'; 
-    $rows .= 'name="' . $user->id . '" ';
-    $rows .= 'value="late"' . ($is_late ? 'checked' : '') . '>';
-    $rows .= '</td>';
-    $rows .= '<td><input style="margin-left: 20px;" type="radio"'; 
-    $rows .= 'name="' . $user->id . '" ';
-    $rows .= 'value="absent"' . ((!$is_present && !$is_late) ? 'checked' : '') . '>';
-    $rows .= '</td>';
-    $rows .= '</tr>';
-}
 
+// Creates/updates the report once the submit button is pressed.
 if(array_key_exists('submit', $_POST)) {
     $present = [];
     $absent = [];
@@ -118,6 +103,7 @@ if(array_key_exists('submit', $_POST)) {
 ?>
 
 <script>
+// Client side search function to find students easily.
 function search() {
     const input = document.getElementById("search");
     const filter = input.value.toUpperCase();
@@ -185,13 +171,44 @@ function clearSearch() {
         <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
     </div>
     <table class="table" id="table">
-            <tr>
-                <th>Name</th>
-                <th>Present</th>
-                <th>Late</th>
-                <th>Absent</th>
-            </tr>
-            <?php echo $rows; ?>
+        <tr>
+            <th>Name</th>
+            <th>Present</th>
+            <th>Late</th>
+            <th>Absent</th>
+        </tr>
+        <?php foreach($users as $user): ?>
+        <tr>
+            <td><?= $user->name; ?></td>
+            <td>
+                <input 
+                    style="margin-left: 20px;" 
+                    type="radio" 
+                    name="<?= $user->id; ?>"
+                    value="present"
+                    <?php if(in_array($user->id, $present_ids)) echo 'checked'; ?>
+                />
+            </td>
+            <td>
+                <input 
+                    style="margin-left: 20px;" 
+                    type="radio" 
+                    name="<?= $user->id; ?>"
+                    value="late"
+                    <?php if(in_array($user->id, $late_ids)) echo 'checked'; ?>
+                />
+            </td>
+            <td>
+                <input 
+                    style="margin-left: 20px;" 
+                    type="radio" 
+                    name="<?= $user->id; ?>"
+                    value="absent"
+                    <?php if(!in_array($user->id, $present_ids) && !in_array($user->id, $late_ids)) echo 'checked'; ?>
+                />
+            </td>
+        </tr>
+        <?php endforeach; ?>
     </table>
     <input type="submit" name="submit" value="Submit" class="btn btn-primary"/>
 </form>

@@ -15,11 +15,11 @@ use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Date\Date;
 
-// get query param for report id
+// Get query param for report id.
 $uri = Uri::getInstance();
 $report_id = $uri->getVar('id');
 
-// load report from db
+// Load report from db.
 $db = JFactory::getDbo();
 $query = $db->getQuery(true);
 $query->select('*');
@@ -38,38 +38,19 @@ function get_user($id) {
     return JFactory::getUser($id);
 }
 
-$present_users = '';
+// Load names and sort
 $user_ids = json_decode($report->present);
-$users = array_map(get_user, $user_ids);
-usort($users, sort_name);
-foreach ($users as $user) {
-    $present_users .= '<tr class="table-success">';
-    $present_users .= '<td>' . $user->name . '</td>';
-    $present_users .= '<td>Present</td>';
-    $present_users .= '</tr>';
-}
+$present_users = array_map(get_user, $user_ids);
+usort($present_users, sort_name);
 
-$absent_users = '';
-$user_ids = json_decode($report->absent);
-$users = array_map(get_user, $user_ids);
-usort($users, sort_name);
-foreach ($users as $user) {
-    $absent_users .= '<tr class="table-danger">';
-    $absent_users .= '<td>' . $user->name . '</td>';
-    $absent_users .= '<td>Absent</td>';
-    $absent_users .= '</tr>';
-}
-
-$late_users = '';
 $user_ids = json_decode($report->late);
-$users = array_map(get_user, $user_ids);
-usort($users, sort_name);
-foreach ($users as $user) {
-    $late_users .= '<tr class="table-warning">';
-    $late_users .= '<td>' . $user->name . '</td>';
-    $late_users .= '<td>Late</td>';
-    $late_users .= '</tr>';
-}
+$late_users = array_map(get_user, $user_ids);
+usort($late_users, sort_name);
+
+$user_ids = json_decode($report->absent);
+$absent_users = array_map(get_user, $user_ids);
+usort($absent_users, sort_name);
+
 ?>
 
 <style>
@@ -89,7 +70,22 @@ foreach ($users as $user) {
         <th>Name</th>
         <th>Status</th>
     </tr>
-    <?php echo $present_users; ?>
-    <?php echo $late_users; ?>
-    <?php echo $absent_users; ?>
+    <?php foreach ($present_users as $present_user): ?>
+        <tr class="table-success">
+            <td><?= $present_user->name; ?></td>
+            <td>Present</td>
+        </tr>
+    <?php endforeach ?>
+    <?php foreach ($late_users as $late_user): ?>
+        <tr class="table-warning">
+            <td><?= $late_user->name; ?></td>
+            <td>Late</td>
+        </tr>
+    <?php endforeach ?>
+    <?php foreach ($absent_users as $absent_user): ?>
+        <tr class="table-danger">
+            <td><?= $absent_user->name; ?></td>
+            <td>Absent</td>
+        </tr>
+    <?php endforeach ?>
 </table>
