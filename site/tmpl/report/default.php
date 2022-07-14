@@ -44,7 +44,16 @@ $present_users = array_map(get_user, $user_ids);
 usort($present_users, sort_name);
 
 $user_ids = json_decode($report->late);
-$late_users = array_map(get_user, $user_ids);
+$late_minutes = json_decode($report->late_minutes);
+$late_users = [];
+$len = count($user_ids);
+for ($i = 0; $i < $len; $i++) {
+    $late_user = new stdClass();
+    $late_user->id = $user_ids[$i];
+    $late_user->name = get_user($late_user->id)->name;
+    $late_user->minutes = $late_minutes[$i];
+    array_push($late_users, $late_user);
+}
 usort($late_users, sort_name);
 
 $user_ids = json_decode($report->absent);
@@ -79,7 +88,7 @@ usort($absent_users, sort_name);
     <?php foreach ($late_users as $late_user): ?>
         <tr class="table-warning">
             <td><?= $late_user->name; ?></td>
-            <td>Late</td>
+            <td>Late (<?= $late_user->minutes; ?> minutes)</td>
         </tr>
     <?php endforeach ?>
     <?php foreach ($absent_users as $absent_user): ?>

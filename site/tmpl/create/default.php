@@ -50,15 +50,19 @@ if (isset($report_id)) {
     $report_date_created = $report_date_created->format('Y-m-d');
     $present_ids = json_decode($report->present);
     $late_ids = json_decode($report->late);
+    $late_minutes = json_decode($report->late_minutes);
     $absent_ids = json_decode($report->absent);
     $members = array_merge($present_ids, $absent_ids, $late_ids);
-    asort($members);
 }
 
 // We need a list of all the users that were a part of the report.
 $users = [];
+$index = 0;
 foreach ($members as $id) {
     $user = JFactory::getUser($id);
+    if (isset($report_id) && in_array($id, $late_ids)) {
+        $user->late_minutes = $late_minutes[$index++];
+    }
     array_push($users, $user);
 }
 usort($users, function ($user_a, $user_b) {
@@ -70,6 +74,7 @@ if(array_key_exists('submit', $_POST)) {
     $present = [];
     $absent = [];
     $late = [];
+    $late_minutes = [];
     foreach ($users as $user) {
         $status = $input->get($user->id, False);
         if($status == 'present') {
@@ -77,6 +82,8 @@ if(array_key_exists('submit', $_POST)) {
         }
         else if ($status == 'late') {
             array_push($late, $user->id);
+            $minutes = $input->get('late:'.$user->id, 5);
+            array_push($late_minutes, $minutes);
         }
         else {
             array_push($absent, $user->id);
@@ -86,7 +93,14 @@ if(array_key_exists('submit', $_POST)) {
     $report->present = json_encode($present);
     $report->absent = json_encode($absent);
     $report->late = json_encode($late);
+    $report->late_minutes = json_encode($late_minutes);
     $report->date_created = $input->get('date_created', $date->format('Y-m-d'));
+
+    // If the input isn't set, use today's date.
+    if(!$report->date_created) {
+        $report->date_created = $date->format('Y-m-d');
+    }
+
     $db = JFactory::getDbo();
     if (isset($report_id)) {
         $report->id = $report_id;
@@ -104,7 +118,7 @@ if(array_key_exists('submit', $_POST)) {
 
 <script>
 // Client side search function to find students easily.
-function search() {
+function searchStudents() {
     const input = document.getElementById("search");
     const filter = input.value.toUpperCase();
     const table = document.getElementById("table");
@@ -134,6 +148,16 @@ function clearSearch() {
         }
     }
 }
+
+function showLateInput(event) {
+    const lateInput = document.getElementById("late:" + event.target.name);
+    lateInput.style.display = "inline-block";
+}
+
+function hideLateInput(event) {
+    const lateInput = document.getElementById("late:" + event.target.name);
+    lateInput.style.display = "none";
+}
 </script>
 
 <style>
@@ -152,6 +176,10 @@ function clearSearch() {
         border-radius: 5px;
     }
 
+    input[type=number] {
+        width: 60px;
+    }
+
     td {
         width:25%;
     }
@@ -167,7 +195,7 @@ function clearSearch() {
         <input name="date_created" value="<?php echo isset($report_date_created) ? $report_date_created : $date->format('Y-m-d'); ?>" class="form-control" type="date"/>
     </div>
     <div class="input-group search-bar">
-        <input class="form-control" type="text" id="search" onkeyup="search()" placeholder="Search student name"/>
+        <input class="form-control" type="text" id="search" onkeyup="searchStudents()" placeholder="Search student name"/>
         <button type="button" class="btn btn-secondary" onclick="clearSearch()">Clear</button>
     </div>
     <table class="table" id="table">
@@ -177,11 +205,12 @@ function clearSearch() {
             <th>Late</th>
             <th>Absent</th>
         </tr>
-        <?php foreach($users as $user): ?>
+        <?php foreach($users as $index=>$user): ?>
         <tr>
             <td><?= $user->name; ?></td>
             <td>
                 <input 
+                    onclick="hideLateInput(event);"
                     style="margin-left: 20px;" 
                     type="radio" 
                     name="<?= $user->id; ?>"
@@ -190,16 +219,40 @@ function clearSearch() {
                 />
             </td>
             <td>
-                <input 
-                    style="margin-left: 20px;" 
+                <input
+                    onclick="showLateInput(event);"
+                    style="margin-left: 10px;" 
                     type="radio" 
                     name="<?= $user->id; ?>"
                     value="late"
                     <?php if(in_array($user->id, $late_ids)) echo 'checked'; ?>
                 />
+                <div
+                    id="<?= 'late:'.$user->id; ?>"
+                    <?php 
+                        if(in_array($user->id, $late_ids)) 
+                            echo 'style="display: inline-block"';
+                        else 
+                            echo 'style="display: none"'; 
+                    ?>
+                >
+                    <input
+                        name="<?= 'late:'.$user->id; ?>"
+                        type="number"
+                        class="form-control form-control-sm"
+                        <?php 
+                            if(in_array($user->id, $late_ids))
+                                echo 'value="' . $user->late_minutes . '"';
+                            else
+                                echo 'value="5"';
+                        ?>
+                        min="5"
+                    /> minutes late.
+                </div>
             </td>
             <td>
-                <input 
+                <input
+                    onclick="hideLateInput(event);"
                     style="margin-left: 20px;" 
                     type="radio" 
                     name="<?= $user->id; ?>"

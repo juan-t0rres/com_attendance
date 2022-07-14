@@ -5,6 +5,7 @@ CREATE TABLE `#__attendance_reports` (
     `present` JSON,
     `absent` JSON,
     `late` JSON,
+    `late_minutes` JSON,
     `date_created` VARCHAR(10) NOT NULL,
     `created_by` VARCHAR(50) NOT NULL,
     PRIMARY KEY (`id`)
