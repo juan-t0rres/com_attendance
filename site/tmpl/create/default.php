@@ -16,6 +16,20 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Date\Date;
 
+function getGroupId($groupName){
+    $db = JFactory::getDBO();
+    $db->setQuery($db->getQuery(true)
+        ->select('*')
+        ->from("#__usergroups")
+    );
+    $groups = $db->loadRowList();
+    foreach ($groups as $group) {
+        if ($group[4] == $groupName) // $group[4] holds the name of current group
+            return $group[0]; // $group[0] holds group ID
+    }
+    return false;
+}
+
 // Get URL parameters editing an attendance report.
 $uri = Uri::getInstance();
 $report_id = $uri->getVar('id');
@@ -27,8 +41,8 @@ $app = Factory::getApplication();
 $date = Factory::getDate();
 $input = $app->input;
 
-// Students are group id 11, fetch all students
-$group_id = 11;
+// Fetch all students
+$group_id = getGroupId('Student');
 $access = new JAccess();
 $members = $access->getUsersByGroup($group_id);
 
