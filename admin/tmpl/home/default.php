@@ -32,8 +32,8 @@ use Joomla\CMS\Factory;
                 <?php
                     $db = JFactory::getDbo();
                     $query = $db->getQuery(true);
-                    $query->delete($db->quoteName('#__attendance_reports'));
-                    $db->setQuery($query);
+                    $query = "DELETE FROM #__attendance_reports";
+                    $db->setQuery($query)->execute();
                 ?>
 
                 text = "The attendance records have been deleted.";
@@ -46,7 +46,7 @@ use Joomla\CMS\Factory;
             }
         </script>
 
-        <button class="btn danger" onclick="deleteAttendanceRecords()">Delete All Attendance Records</button>
+        <button class="btn btn-danger" onclick="deleteAttendanceRecords()">Delete All Attendance Records</button>
 
         <p id="response"></p>
 
