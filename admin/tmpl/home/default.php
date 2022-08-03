@@ -12,148 +12,43 @@
 defined('_JEXEC') or die('Restricted Access');
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
-
-// get query params for pagination and date
-$uri = Uri::getInstance();
-$page = $uri->getVar('page') ?? 1;
-$date_param = $uri->getVar('date');
-$page_size = $uri->getVar('page_size') ?? 5;
-
-$db = JFactory::getDBO();
-$query = $db->getQuery(true);
-$query->select('id,present,absent,date_created,created_by');
-$query->from('#__attendance_reports');
-if (isset($date_param)) {
-    $date_arr = explode('-', $date_param);
-    $date_search = $date_arr[1] . '/' . $date_arr[2] . '/' . $date_arr[0];
-    $query->where('date_created LIKE ' . $db->quote($date_search));
-}
-
-$db->setQuery($query);
-$db->execute();
-$num_rows = $db->getNumRows();
-
-$num_pages = $num_rows / $page_size;
-$num_pages_float = $num_rows / (float) $page_size;
-if ($num_pages_float > $num_pages) {
-    $num_pages++;
-}
-
-$option_query = '?option=com_attendance';
-$page_query = '&view=home&page=';
-$next_page_href = JURI::current() . $option_query . $page_query . ($page + 1);
-$prev_page_href = JURI::current() . $option_query . $page_query . ($page - 1);
-if (isset($date_param)) {
-    $next_page_href .= '&date=' . $date_param;
-    $prev_page_href .= '&date=' . $date_param;
-}
-$next_page_href .= '&page_size=' . $page_size;
-$prev_page_href .= '&page_size=' . $page_size;
-$next_page_button = '<li class="page-item"><a class="page-link" href="' . $next_page_href . '">&raquo;</a></li>';
-$prev_page_button = '<li class="page-item"><a class="page-link" href="' . $prev_page_href . '">&laquo;</a></li>';
-if ($page <= 1) {
-    $prev_page_button = null;
-}
-if ($page >= $num_pages) {
-    $next_page_button = null;
-}
-
-$query->order('id DESC');
-$query->setLimit($page_size, ($page - 1) * $page_size);
-$db->setQuery((string) $query);
-$reports = $db->loadObjectList();
-
-$rows = '';
-if ($reports) {
-    foreach ($reports as $report)
-    {
-        $view_href = JURI::current() . $option_query . '&view=report&id=' . $report->id;
-        $edit_href = JURI::current() . $option_query . '&view=create&id=' . $report->id;
-        $rows .= '<tr>';
-        $rows .= '<td>' . $report->date_created . '</td>';
-        $rows .= '<td>' . $report->created_by . '</td>';
-        $rows .= '<td>';
-        $rows .= '<a class="btn btn-primary btn-sm" href="' . $view_href . '" role="button">View</a>';
-        $rows .= '<a class="btn btn-secondary btn-sm ms-1" href="' . $edit_href . '" role="button">Edit</a>';
-        $rows .= '</td>';
-        $rows .= '</tr>';
-    }
-}
-
-if(array_key_exists('search', $_POST)) {
-    $app = Factory::getApplication();
-    $input = $app->input;
-    $app->redirect(JRoute::_('index.php'. $option_query . '&view=home&page=' . $page . '&date=' . $input->get('date_param')));
-}
-
-$page_size_options = [5, 10, 20];
-$options = '';
-foreach ($page_size_options as $page_size_option) {
-    $uri->setVar('page_size', $page_size_option);
-    $options .= '<option value="?';
-    $options .= $uri->getQuery() . '" ';
-    if ($page_size == $page_size_option) {
-        $options .= 'selected';
-    }
-    $options .= '>' . $page_size_option . '</option>';
-}
 
 ?>
 
-<style>
-    .filters {
-        margin-top: 20px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+<html>
+    <body>
 
-    .pagination {
-        margin-left: 0px;
-    }
+        <h2>Delete Attendance Records</h2>
 
-    .inputs {
-        display: flex;
-        column-gap: 5px;
-    }
+        <p>This button will delete ALL current attendance records in the system.</p>
+        <p>BE VERY CAREFUL!</p>
 
-    .date-picker {
-        width: 150px;
-    }
-</style>
+        <script>
+            function deleteAttendanceRecords() {
+            let text = "Are you sure you want to delete all the attendance records?\nEither OK or Cancel.";
+            
+            if (confirm(text) == true)
+            {
+                <?php
+                    $db = JFactory::getDbo();
+                    $query = $db->getQuery(true);
+                    $query->delete($db->quoteName('#__attendance_reports'));
+                    $db->setQuery($query);
+                ?>
 
-<h2>Attendance</h2>
-<a class="btn btn-primary" href="<?php echo JURI::current(); ?>?option=com_attendance&view=create">Take Attendance</a>
-<form method="post" class="filters"> 
-    <div class="inputs"> 
-        <input name="date_param" class="date-picker form-control" value="<?php echo $date_param ?>" type="date"/>
-        <input type="submit" name="search" value="Search" class="btn btn-secondary" />
-        <a class="btn btn-secondary" href="<?php echo JURI::current(); ?>?option=com_attendance">Clear</a>
-    </div>
-    <div>
-        <label for="page-size-select">Results Per Page</label>
-        <select id="page-size-select" onchange="location = this.value;">
-            <?php echo $options; ?>
-        </select>
-    </div>
-</form>
+                text = "The attendance records have been deleted.";
+            }
+            else
+            {
+                text = "You canceled.";
+            }
+            document.getElementById("response").innerHTML = text;
+            }
+        </script>
 
-<table class="table" id="table">
-    <tr>
-        <th>Date</th>
-        <th>Created By</th>
-        <th>Action</th>
-    </tr>
-    <?php echo $rows; ?>
-</table>
-<ul class="pagination">
-    <?php echo $prev_page_button; ?>
-    <?php 
-        if ($num_pages > 1) {
-            echo '<li class="page-item page-link">' . $page . '</li>';
-        }
-    ?>
-    <?php echo $next_page_button; ?>
-</ul>
+        <button class="btn danger" onclick="deleteAttendanceRecords()">Delete All Attendance Records</button>
+
+        <p id="response"></p>
+
+    </body>
+</html>
